@@ -50,13 +50,14 @@ class ZoneDessin(QWidget):
         self.flèche_rouge = QPixmap()
         self.flèche_rouge_mini = QPixmap()
 
-    def dessine_tableau(self, p:QPainter):
+    def dessine_tableau(self, p: QPainter):
         """ Definition de toutes les etapes du dessin dans le QPainter
         """
         ech = self.echelleDessin
+        min_ech = int(2*ech//3)
         # Mise à jour de la taille d'ecriture des lettres
         font = QtGui.QFont()
-        font.setPointSize(max(1,2*ech//3))
+        font.setPointSize(max(1, min_ech))
         p.setFont(font)
         # Parcours la totalite des cases de reso pour les dessiner
         for case in self.reso.cases:
@@ -69,38 +70,41 @@ class ZoneDessin(QWidget):
                 y = self.indice_vers_pixels(case_y)
                 # Paramètre le stylo
                 color = QtGui.QColor(col[0], col[1], col[2])
-                p.setBrush(QColor((col[0]+255)//2, (col[1]+255)//2, (col[2]+255)//2))
+                p.setBrush(
+                    QColor((col[0]+255)//2, (col[1]+255)//2, (col[2]+255)//2))
                 pen = QtGui.QPen(color, 4)
                 p.setPen(pen)
                 # Dessine le rectangle à bord arrondis
-                m = ech//10  # marges
-                p.drawRoundedRect(x+m, y+m, ech-m, ech-m, ech//10, ech//10)
+                m = int(ech//10)  # marges
+                p.drawRoundedRect(int(x+m), int(y+m), int(ech-m),
+                                  int(ech-m), ech//10, ech//10)
                 # Change les paramètres du stylo pour ecrire la lettre
                 color = QtGui.QColor(col[0]//2, col[1]//2, col[2]//2)
                 pen = QtGui.QPen(color, 4)
                 p.setPen(pen)
-                # La lettre n'est pas ecrite si elle est illisble (trop petite)
+                # La lettre n'est pas écrite si elle est illisble (trop petite)
                 if ech >= 12:
-                    recText = QRect(x, y, ech, ech)
+                    recText = QRect(int(x), int(y), int(ech), int(ech))
                     p.drawText(recText, 0x84, label)
-        # Dessine les portions de chemins retraçant les backtracking
+        # Dessine les portions de chemins retraçant les backtrackings
         if self.reso.chemin is not None:
             col = self.reso.couleurs['actif']
             color = QtGui.QColor(col[0], col[1], col[2])
-            p.setBrush(QColor((col[0]+255)//2, (col[1]+255)//2, (col[2]+255)//2))
+            p.setBrush(
+                QColor((col[0]+255)//2, (col[1]+255)//2, (col[2]+255)//2))
             pen = QtGui.QPen(color, ech//10, Qt.DashDotLine)
             p.setPen(pen)
             for chemin in self.reso.chemin:
-                x1 = self.indice_vers_pixels(chemin[0][0]) + ech//2
-                y1 = self.indice_vers_pixels(chemin[0][1]) + ech//2
-                x2 = self.indice_vers_pixels(chemin[1][0]) + ech//2
-                y2 = self.indice_vers_pixels(chemin[1][1]) + ech//2
+                x1 = int(self.indice_vers_pixels(chemin[0][0]) + ech//2)
+                y1 = int(self.indice_vers_pixels(chemin[0][1]) + ech//2)
+                x2 = int(self.indice_vers_pixels(chemin[1][0]) + ech//2)
+                y2 = int(self.indice_vers_pixels(chemin[1][1]) + ech//2)
                 p.drawLine(x1, y1, x2, y2)
         # Dessine les flèches
         for j in range(len(self.reso.tableau)):
             for i in range(len(self.reso.tableau[0])):
-                x = self.indice_vers_pixels(i) - ech//3
-                y = self.indice_vers_pixels(j) - ech//3
+                x = int(self.indice_vers_pixels(i) - ech//3)
+                y = int(self.indice_vers_pixels(j) - ech//3)
                 if self.reso.flèches[j][i] == 'vert_actif':
                     p.drawPixmap(x, y, self.flèche_verte_mini)
                 if self.reso.flèches[j][i] == 'vert_passif':
@@ -123,6 +127,7 @@ class ZoneDessin(QWidget):
         p.begin(self)
         self.dessine_tableau(p)
         p.end()
+
 
 class Fenetre(QMainWindow):
     """Fenêtre graphique principale.
@@ -153,22 +158,26 @@ class Fenetre(QMainWindow):
         self.boxInitialisation = QCheckBox('Initialisation du tableau')
         self.boxInitialisation.setTristate(False)
         self.boxInitialisation.stateChanged.connect(self.recherche_plsc)
-        self.completion = QWidget() # Widget contenant la ligne ligneCompletion
-        self.ligneCompletion = QHBoxLayout()  # Ligne de parametrage de la completion du tableau
+        self.completion = QWidget()  # Widget contenant la ligne ligneCompletion
+        # Ligne de parametrage de la completion du tableau
+        self.ligneCompletion = QHBoxLayout()
         self.boxCompletion = QCheckBox('Complétion du tableau')
         self.boxCompletion.setTristate(False)
         self.boxCompletion.stateChanged.connect(self.recherche_plsc)
         self.labelCompletion = QLabel('Durée animation')
         self.spinCompletion = QSpinBox()  # Selection de la duree de l'animation
         self.labelPlsc = QLabel('PLSC')
-        self.boxSelectionUnePlsc = QCheckBox('Une seule') # Selection d'une seule solution
+        self.boxSelectionUnePlsc = QCheckBox(
+            'Une seule')  # Selection d'une seule solution
         self.boxSelectionUnePlsc.setTristate(False)
         self.boxSelectionUnePlsc.stateChanged.connect(self.selection_Plsc_Une)
-        self.selectionPlsc = QWidget() # Widget contenant la ligne ligneCompletion
-        self.ligneSelectionPlsc = QHBoxLayout()  # Ligne de parametrage de la completion du tableau
+        self.selectionPlsc = QWidget()  # Widget contenant la ligne ligneCompletion
+        # Ligne de parametrage de la completion du tableau
+        self.ligneSelectionPlsc = QHBoxLayout()
         self.boxSelectionToutesPlsc = QCheckBox('Toutes')
         self.boxSelectionToutesPlsc.setTristate(False)
-        self.boxSelectionToutesPlsc.stateChanged.connect(self.selection_Plsc_Toutes)
+        self.boxSelectionToutesPlsc.stateChanged.connect(
+            self.selection_Plsc_Toutes)
         self.spinSelectionPlsc = QSpinBox()  # Selection de la duree de l'animation
         self.spinSelectionPlsc.valueChanged.connect(self.mise_a_jour_chemin)
         self.labelSolution = QLabel('Solution')
@@ -205,7 +214,7 @@ class Fenetre(QMainWindow):
         self.colonneD.addWidget(self.completion)
         self.colonneD.addWidget(self.labelPlsc)
         self.colonneD.addWidget(self.boxSelectionUnePlsc)
-        
+
         self.ligneSelectionPlsc.addWidget(self.boxSelectionToutesPlsc)
         self.ligneSelectionPlsc.addWidget(self.spinSelectionPlsc)
         self.selectionPlsc.setLayout(self.ligneSelectionPlsc)
@@ -237,7 +246,7 @@ class Fenetre(QMainWindow):
         self.widgetP.setLayout(self.zoneP)
         self.widgetP.setGeometry(25, 40, dim[0], dim[1])
 
-    def calculEchelle(self, largeur, hauteur)->tuple:
+    def calculEchelle(self, largeur, hauteur) -> tuple:
         """ A partir de la taille de la zone de dessin ou des paramètres de 
         la sauvegarde souhaitee, met à jour self.dessin.echelleDessin
         Renvoie en pixels la largeur et la hauteur reelles de l'image produite
@@ -247,7 +256,7 @@ class Fenetre(QMainWindow):
         # Largeur de la fenêtre / nombre de lignes plus marges
         h_max = hauteur // (len(T.Y) + 1 + D.marge*2)
         l_max = largeur // (len(T.X) + 1 + D.marge*2)
-        ech  = min(h_max, l_max)
+        ech = min(h_max, l_max)
         D.echelleDessin = ech
         largeurReelle = int((len(T.X) + 1 + D.marge*2) * ech)
         hauteurReelle = int((len(T.Y) + 1 + D.marge*2) * ech)
@@ -282,7 +291,7 @@ class Fenetre(QMainWindow):
         # Consreve l'extension si elle a ete renseignee. Sinon, force le format
         # self.images[0] contient l'image vierge
         # self.images[1] contient la phase d'initialisation
-        if self.genère_animation==False:  # S'il s'agit d'une image fixe
+        if self.genère_animation == False:  # S'il s'agit d'une image fixe
             if '.' not in chemin:
                 chemin += ".png"  # Format png pour les images fixes
             self.images[-1].save(chemin)
@@ -291,7 +300,7 @@ class Fenetre(QMainWindow):
                 chemin += ".gif"  # Format gif pour les animations
             imagesGif = conversion_QImages_vers_GIF(self.images)
             imagesGif[1].save(chemin,
-               save_all=True, append_images=imagesGif[1:], optimize=False, duration=duree, loop=0)
+                              save_all=True, append_images=imagesGif[1:], optimize=False, duration=duree, loop=0)
         self.genère_animation = False
         self.destinationFichier = False
 
@@ -351,11 +360,14 @@ class Fenetre(QMainWindow):
             case_active_Y = T.cherche_case(x_destination, -1)
             case_active_X.couleur = T.couleurs[couleur_ref]
             case_active_Y.couleur = T.couleurs[couleur_ref]
-            T.chemin.append(((x_origine, y_origine), (x_destination, y_origine)))
-            T.chemin.append(((x_destination, y_origine), (x_destination, y_destination)))
-            T.chemin.append(((x_destination, y_destination), (x_destination-1, y_destination-1)))
+            T.chemin.append(
+                ((x_origine, y_origine), (x_destination, y_origine)))
+            T.chemin.append(((x_destination, y_origine),
+                            (x_destination, y_destination)))
+            T.chemin.append(((x_destination, y_destination),
+                            (x_destination-1, y_destination-1)))
             # Les ponts sur le chemin de la PLSC passent en clair
-            T.flèches[y_destination][x_destination] ='vert_actif'
+            T.flèches[y_destination][x_destination] = 'vert_actif'
             point_origine = (x_destination-1, y_destination-1)
 
     def efface_traces(self):
@@ -385,7 +397,7 @@ class Fenetre(QMainWindow):
         # Mise à jour de l'échelle et de la dimension de la zone utile
         if self.destinationFichier:
             largeur, hauteur = self.calculEchelle(self.spinExportLargeur.value(),
-                                              self.spinExportHauteur.value())
+                                                  self.spinExportHauteur.value())
         else:
             largeurDessin = D.size().width()
             hauteurDessin = D.size().height()
@@ -401,7 +413,8 @@ class Fenetre(QMainWindow):
         # Cree et initialise le tableau des valeurs (m*n) cases
         T.tableau = [[0]*(m) for _ in range(n)]
         # Cree et initialise le tableau des ponts (cases (i, j) verifiant X[i] = Y[j])
-        valeur_max = min(m, n) # La PLSC est forcement plus petite que la plus petite sequence
+        # La PLSC est forcement plus petite que la plus petite sequence
+        valeur_max = min(m, n)
         T.ponts = [[] for _ in range(valeur_max)]
         # Initialise la première ligne et la première colonne à 0
         visible = self.boxInitialisation.isChecked()
@@ -447,10 +460,10 @@ class Fenetre(QMainWindow):
         # Ajoute le caractère vide '∅' en en-tête de Y
         c = Cases(chr(8709), -1, 0, T.couleurs['base'])
         T.cases.append(c)
-        for i in range(1,len(T.X)):
+        for i in range(1, len(T.X)):
             c = Cases(T.X[i], i, -1, T.couleurs['base'])
             T.cases.append(c)
-        for j in range(1,len(T.Y)):
+        for j in range(1, len(T.Y)):
             c = Cases(T.Y[j], -1, j, T.couleurs['base'])
             T.cases.append(c)
 
@@ -464,7 +477,6 @@ class Fenetre(QMainWindow):
                 image.setPixel(x, y, 0x00FFFFFF)  # Impose un pixel transparent
         # Initialise la liste des images avec l'image vierge
         self.images = [image]
-
 
     def mise_a_jour_chemin(self):
         """ Relance la mise à jour de l'affichage des chemins à la suite d'une
@@ -496,11 +508,12 @@ class Fenetre(QMainWindow):
         # Si la complétion du tableau vient d'être cochée mais que l'initialisation n'est pas encore cochée
         if self.boxCompletion.isChecked():
             if self.boxInitialisation.isChecked() == False:
-                self.boxInitialisation.setCheckState(True) # Force l'initialisation
+                self.boxInitialisation.setCheckState(
+                    True)  # Force l'initialisation
                 self.boxInitialisation.setCheckState(True)
                 return
                 # Sort de la recherche car la modification de l'état de boxInitialisation va le relancer
-        else: # Si la complétion est décochée alors les parcours de Plsc ne peuvent pas être affichés
+        else:  # Si la complétion est décochée alors les parcours de Plsc ne peuvent pas être affichés
             self.boxSelectionUnePlsc.setCheckState(False)
             self.boxSelectionToutesPlsc.setCheckState(False)
         self.initialisation()
@@ -516,7 +529,8 @@ class Fenetre(QMainWindow):
                     T.tableau[ligne][colonne] = T.tableau[ligne-1][colonne-1]+1
                     valeur = T.tableau[ligne][colonne]
                     T.ponts[valeur].append((colonne, ligne))
-                    c = Cases(str(valeur), colonne, ligne, T.couleurs['neutre'], False)
+                    c = Cases(str(valeur), colonne, ligne,
+                              T.couleurs['neutre'], False)
                     T.cases.append(c)
                     type_flèche = 'vert_actif'
                 else:
@@ -524,12 +538,13 @@ class Fenetre(QMainWindow):
                     haut = T.tableau[ligne-1][colonne]
                     gauche = T.tableau[ligne][colonne-1]
                     T.tableau[ligne][colonne] = max(haut, gauche)
-                    c = Cases(str(T.tableau[ligne][colonne]), colonne, ligne, T.couleurs['neutre'], False)
+                    c = Cases(str(T.tableau[ligne][colonne]),
+                              colonne, ligne, T.couleurs['neutre'], False)
                     T.cases.append(c)
                     type_flèche = 'rouge_max'
                 if self.boxCompletion.isChecked():
                     c.visible = True
-                    T.flèches [ligne][colonne] = type_flèche
+                    T.flèches[ligne][colonne] = type_flèche
                     case_active_X = T.cherche_case(-1, ligne)
                     case_active_Y = T.cherche_case(colonne, -1)
                     case_active_X.couleur = T.couleurs[couleur_ref]
@@ -559,12 +574,13 @@ class Fenetre(QMainWindow):
     def redimensionne_flèches(self):
         D = self.dessin
         ech = D.echelleDessin
+        ech_int = int(ech*2//3)
         D.flèche_verte.load("tab_fleche_verte.png")
         D.flèche_vertgris.load("tab_fleche_vertgris.png")
         D.flèche_rouge.load("tab_fleche_rouge.png")
-        D.flèche_verte_mini = D.flèche_verte.scaled(ech*2//3, ech*2//3)
-        D.flèche_vertgris_mini = D.flèche_vertgris.scaled(ech*2//3, ech*2//3)
-        D.flèche_rouge_mini = D.flèche_rouge.scaled(ech*2//3, ech*2//3)
+        D.flèche_verte_mini = D.flèche_verte.scaled(ech_int, ech_int)
+        D.flèche_vertgris_mini = D.flèche_vertgris.scaled(ech_int, ech_int)
+        D.flèche_rouge_mini = D.flèche_rouge.scaled(ech_int, ech_int)
 
     def selection_Plsc_Une(self):
         """ Declenche par le changement d'etat de la boxSelectionUnePlsc
@@ -594,9 +610,9 @@ class Fenetre(QMainWindow):
             self.boxSelectionUnePlsc.setCheckState(False)
             self.spinSelectionPlsc.setEnabled(True)
             return
-        self.spinSelectionPlsc.setEnabled(self.boxSelectionToutesPlsc.isChecked())
+        self.spinSelectionPlsc.setEnabled(
+            self.boxSelectionToutesPlsc.isChecked())
         self.recherche_plsc()
-
 
     def taille_ecran(self) -> tuple:
         """ Renvoie un n-uplet constitue de :
@@ -627,7 +643,8 @@ class Fenetre(QMainWindow):
         duree = duree_totale / nb_cases
         return duree
 
-def conversion_QImages_vers_GIF(listeQImages:list)->list:
+
+def conversion_QImages_vers_GIF(listeQImages: list) -> list:
     """Prend une liste de QImages et la converti en liste d'Images (PIL)
     en prevision d'une exportation en GIF anime
     Renvoie la liste de GIF
@@ -643,6 +660,7 @@ def conversion_QImages_vers_GIF(listeQImages:list)->list:
         # imageQt.save('tempo/_Qtemp' + str(numeroImage) + '.png')
         imageQt.save(buffer, "png")
         imagePil = Image.open(io.BytesIO(buffer.data()))
-        listeImagesGIF.append(imagePil)  # Ajout de cette image à la liste de sortie
+        # Ajout de cette image à la liste de sortie
+        listeImagesGIF.append(imagePil)
         # imagePil.save('tempo/_temp' + str(numeroImage) + '.png')
     return listeImagesGIF

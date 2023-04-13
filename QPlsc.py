@@ -1,4 +1,3 @@
-# coding: utf-8
 """
 Programme principal de la recherche d'une (PLSC) plus longue sous-séquence
 commune entre deux chaînes
@@ -15,7 +14,7 @@ from QPlscStructures import *
 
 # ********** Corps du programme **********
 # Lance l'application
-app=QApplication(sys.argv)
+app = QApplication(sys.argv)
 # Création de la fenêtre princiale de type Fenetre
 frame = Fenetre()
 # Affichhe le composant principale de frame

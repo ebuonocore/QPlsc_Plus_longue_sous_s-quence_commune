@@ -91,12 +91,11 @@ class Cases:
     """ Décrit chaque case du tableau de mémoïsation (avec descripteurs)
     """
 
-    def __init__(self, label, x=0, y=0, couleur=0, visible = True):
+    def __init__(self, label, x=0, y=0, couleur=0):
         self.label = label
         self.x = x
         self.y = y
         self.couleur = couleur
-        self.visible = visible
 
     def param(self):
         """ Renvoie les valeurs des attributs de l'instance
